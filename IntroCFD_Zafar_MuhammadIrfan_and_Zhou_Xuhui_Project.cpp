@@ -509,7 +509,30 @@ void bndry()
 /* !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 /* !************************************************************** */
   /*  Side wall */
-
+    for( j = 1; j<jmax-1; j++)
+    {
+        i = 0;
+        u[i][j][1] = zero;
+        u[i][j][2] = zero;
+        u[0][j][0] = two*u[1][j][0] - u[2][j][0];
+        i = imax -1;
+        u[i][j][1] = zero;
+        u[i][j][2] = zero;
+        u[imax-1][j][0] = two*u[imax-2][j][0] - u[imax-3][j][0];
+    }
+   /* Top/Bottom wall*/
+    for(i=0; i<imax; i++)
+    {
+        j = 0;
+        u[i][j][1] = zero;
+        u[i][j][2] = zero;
+        u[i][0][0] = two*u[i][1][0] - u[i][2][0];
+        j = jmax -1;
+        u[i][j][1] = uinf;
+        u[i][j][2] = zero;
+        u[i][jmax-1][0] = two*u[i][jmax-2][0] - u[i][jmax-3][0];
+    }
+}
 /**************************************************************************/
 void bndrymms()
 {
