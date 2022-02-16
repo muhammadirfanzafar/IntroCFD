@@ -15,6 +15,13 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+type            sets;
+libs            ("libsampling.so");
+
+writeControl    writeTime;
+
+interpolationScheme cellPoint;
+
 // Set output format : choice of
 //      xmgr
 //      jplot
@@ -50,12 +57,13 @@ fields
     k
     epsilon
     nut
-    Rxx
-    Rxy
-    Rxz
-    Ryy
-    Ryz
-    Rzz
+    turbulenceProperties:R
+//    Rxx
+//    Rxy
+//    Rxz
+//    Ryy
+//    Ryz
+//    Rzz
 );
 
 // Set sampling definition: choice of
