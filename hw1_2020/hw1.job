@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#PBS -l walltime=24:00:00
+#PBS -l nodes=1:ppn=2
+#PBS -W group_list=cascades
+#PBS -q normal_q
+#PBS -A aoetms2020
+#PBS -M irfan@vt.edu  ### replace YOUR-PID
+#PBS -m bea
+#PBS -N hw1
+
+cd $PBS_O_WORKDIR
+
+echo "------------------------------------------"
+echo "Create directory on $WORK and copy files"
+echo "------------------------------------------"
+RUN=/work/cascades/zmuhammadirfan/$PBS_JOBNAME/$PBS_JOBID ### replace YOUR-LOGIN
+mkdir -p $RUN
+cp -rf 0.org $RUN/0
+cp -rf system $RUN/.
+cp -rf constant $RUN/.
+
+cd $RUN
+
+### set initial conditions
+funkySetFields -time 0 2>&1 | tee log.funkySetFields
+
+### decompose for parallel computing
+decomposePar -force 2>&1 | tee log.decomposePar
+
+### run simpleFoam - steady RANS solver
+mpirun -np $PBS_NP simpleFoam -parallel 2>&1 | tee log.simpleFoam
+foamLog log.simpleFoam
+
+### compute Reynolds stress for last time step
+mpirun -np $PBS_NP R -parallel 2>&1 | tee log.R
+
+### use foamCalc to extract components from Reynolds stress tensor
+mpirun -np $PBS_NP foamCalc components R -parallel 2>&1 | tee log.foamCalc
+
+### run the sample utility to extract centerline and profile data
+mpirun -np $PBS_NP sample -parallel 2>&1 | tee log.sample
+
+### reconstruct parallel data.   Should be avoided by using visualization tools which can read decomposed data.
+reconstructPar 2>&1 | tee log.reconstructPar
+
+exit;

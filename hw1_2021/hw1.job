@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#PBS -l walltime=24:00:00
+#PBS -l nodes=1:ppn=1
+#PBS -W group_list=cascades
+#PBS -q normal_q
+#PBS -A mfulearn   ### replace your allocation
+#PBS -M irfan@vt.edu  ### replace YOUR-PID
+#PBS -m bea
+#PBS -N hw1
+
+cd $PBS_O_WORKDIR
+
+echo "------------------------------------------"
+echo "Create directory on $WORK and copy files"
+echo "------------------------------------------"
+RUN=/work/cascades/zmuhammadirfan/$PBS_JOBNAME/$PBS_JOBID ### replace YOUR-LOGIN
+mkdir -p $RUN
+cp -rf 0.org $RUN/0
+cp -rf system $RUN/.
+cp -rf constant $RUN/.
+
+cd $RUN
+
+### set initial conditions
+funkySetFields -time 0 2>&1 | tee log.funkySetFields
+
+
+### run simpleFoam - steady RANS solver
+simpleFoam 2>&1 | tee log.simpleFoam
+foamLog log.simpleFoam
+
+### compute Reynolds stress for last time step
+simpleFoam -postProcess -func R 2>&1 | tee log.R
+
+
+### run the sample utility to extract centerline and profile data
+postProcess -func sampleDict 2>&1 | tee log.sample
+
+
+exit;
